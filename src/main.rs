@@ -109,12 +109,13 @@ impl ProcessHandler for Process {
         for event in self.ports.midi_in.iter(ps).take(midi_in.capacity()) {
             let time = event.time;
             let header = EventHeader::new(time);
-            if event.bytes.len() != 3 {
-                eprintln!("MIDI message wasn't 3 bytes long, skipping.");
+            if event.bytes.len() > 3 {
+                dbg!(event);
+                eprintln!("MIDI message was more than 3 bytes long, skipping.");
                 continue;
             }
             let mut data = [0; 3];
-            data.copy_from_slice(event.bytes);
+            data[..event.bytes.len()].copy_from_slice(event.bytes);
             midi_in.push(MidiEvent::new(header, 0, data))
         }
         let input_plugin_buffers = inputs.with_input_buffers([AudioPortBuffer {
